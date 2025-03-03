@@ -90,6 +90,7 @@
             uploadButton.TabIndex = 2;
             uploadButton.Text = "Upload";
             uploadButton.UseVisualStyleBackColor = true;
+            uploadButton.Click += UploadButton_Click;
             // 
             // targetBucketComboBox
             // 
@@ -108,6 +109,7 @@
             selectFileButton.TabIndex = 1;
             selectFileButton.Text = "Select file";
             selectFileButton.UseVisualStyleBackColor = true;
+            selectFileButton.Click += SelectFileButton_Click;
             // 
             // objectNameTextBox
             // 
@@ -151,6 +153,7 @@
             moveObjectButton.TabIndex = 5;
             moveObjectButton.Text = "Move";
             moveObjectButton.UseVisualStyleBackColor = true;
+            moveObjectButton.Click += MoveObjectButton_Click;
             // 
             // renameButton
             // 
@@ -160,6 +163,7 @@
             renameButton.TabIndex = 5;
             renameButton.Text = "Rename";
             renameButton.UseVisualStyleBackColor = true;
+            renameButton.Click += RenameButton_Click;
             // 
             // newObjectNameTextBox
             // 
@@ -177,6 +181,7 @@
             deleteButton.TabIndex = 3;
             deleteButton.Text = "Delete";
             deleteButton.UseVisualStyleBackColor = true;
+            deleteButton.Click += DeleteButton_Click;
             // 
             // downloadButton
             // 
@@ -186,6 +191,7 @@
             downloadButton.TabIndex = 2;
             downloadButton.Text = "Download";
             downloadButton.UseVisualStyleBackColor = true;
+            downloadButton.Click += DownloadButton_Click;
             // 
             // moveToBucketComboBox
             // 
@@ -204,6 +210,7 @@
             sourceBucketComboBox.Name = "sourceBucketComboBox";
             sourceBucketComboBox.Size = new Size(121, 23);
             sourceBucketComboBox.TabIndex = 1;
+            sourceBucketComboBox.SelectedIndexChanged += SourceBucketComboBox_SelectedIndexChanged;
             // 
             // objectListBox
             // 
@@ -236,6 +243,7 @@
             createBucketButton.TabIndex = 3;
             createBucketButton.Text = "Create";
             createBucketButton.UseVisualStyleBackColor = true;
+            createBucketButton.Click += CreateBucketButton_Click;
             // 
             // deleteBucketButton
             // 
@@ -245,6 +253,7 @@
             deleteBucketButton.TabIndex = 2;
             deleteBucketButton.Text = "Delete";
             deleteBucketButton.UseVisualStyleBackColor = true;
+            deleteBucketButton.Click += DeleteBucketButton_Click;
             // 
             // bucketNameTextBox
             // 
