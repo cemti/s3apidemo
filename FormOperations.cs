@@ -1,108 +1,145 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.VisualBasic;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using System.Net;
 
 namespace s3apidemo
 {
     partial class Form1
     {
-        private readonly BindingList<KeyValuePair<string, BindingList<string>>> _buckets =
-        [
-            new("sample1", ["s1-object1"]),
-            new("sample2", ["s2-object1"])
-        ];
+        private AmazonS3Client? _client;
 
         private void InitializeClient()
         {
-            void PrepareComboBox(ComboBox comboBox)
-            {
-                comboBox.DataSource = new BindingSource(_buckets, null!);
-                comboBox.DisplayMember = "Key";
-            }
-
-            PrepareComboBox(sourceBucketComboBox);
-            PrepareComboBox(targetBucketComboBox);
-            PrepareComboBox(bucketToDeleteComboBox);
-            PrepareComboBox(moveToBucketComboBox);
-
-            objectListBox.DataSource = new BindingSource(sourceBucketComboBox.DataSource, "Value");
+            var accessKey = Interaction.InputBox("Access key", "AWS IAM");
+            var secretKey = Interaction.InputBox("Secret access key", "AWS IAM");
+            _client = new(new BasicAWSCredentials(accessKey, secretKey), RegionEndpoint.USEast1);
         }
 
         private void FinalizeClient()
-        { 
+        {
+            _client?.Dispose();
+            _client = null;
         }
 
-        private IList<string> GetBucket(string bucketName)
+        private async Task<IEnumerable<string>> QueryBuckets()
         {
-            return _buckets.First(x => x.Key == bucketName).Value;
-        }
-
-        private void AddObject(string objectName, string bucketName, string filePath)
-        {
-            var bucket = GetBucket(bucketName);
-
-            if (bucket.Contains(bucketName))
+            if (_client is null)
             {
-                MessageBox.Show($"Object '{objectName}' already exists in bucket '{bucketName}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return [];
+            }
+
+            var buckets = await _client.ListBucketsAsync();
+            return buckets.Buckets.Select(x => x.BucketName);
+        }
+
+        private async Task<IEnumerable<string>> QueryObjects(string bucketName)
+        {
+            if (_client is null || bucketName == "")
+            {
+                return [];
+            }
+
+            var objects = await _client.ListObjectsAsync(bucketName);
+            return objects.S3Objects.Select(x => x.Key);
+        }
+
+        private async Task<bool> AddObject(string objectName, string bucketName, string filePath)
+        {
+            if (_client is null)
+            {
+                return false;
+            }
+
+            var response = await _client.PutObjectAsync(new()
+            {
+                BucketName = bucketName,
+                Key = objectName,
+                FilePath = filePath
+            });
+
+            return response.HttpStatusCode == HttpStatusCode.OK;
+        }
+
+        private async Task<bool> RenameObject(string oldObjectName, string newObjectName, string bucketName)
+        {
+            if (_client is null)
+            {
+                return false;
+            }
+
+            var response = await _client.CopyObjectAsync(bucketName, oldObjectName, bucketName, newObjectName);
+
+            if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
+                return false;
+            }
+
+            _ = await _client.DeleteObjectAsync(bucketName, oldObjectName);
+            return true;
+        }
+
+        private async Task DownloadObject(string objectName, string bucketName, string filePath)
+        {
+            if (_client is null)
+            {
                 return;
             }
 
-            bucket.Add(objectName);
+            var response = await _client.GetObjectAsync(bucketName, objectName);
+            await response.WriteResponseStreamToFileAsync(filePath, false, CancellationToken.None);
         }
 
-        private void RenameObject(string oldObjectName, string newObjectName, string bucketName)
+        private async Task<bool> DeleteObject(string objectName, string bucketName)
         {
-            var bucket = GetBucket(bucketName);
-
-            if (bucket.Contains(newObjectName))
+            if (_client is null)
             {
-                MessageBox.Show($"Object '{newObjectName}' already exists in bucket '{bucketName}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (bucket.IndexOf(oldObjectName) is not -1 and var index)
-            {
-                bucket[index] = newObjectName;
-            }
-        }
-
-        private void DownloadObject(string objectName, string bucketname, string filePath)
-        {
-
-        }
-        
-        private void DeleteObject(string objectName, string bucketName)
-        {
-            GetBucket(bucketName).Remove(objectName);
-        }
-
-        private void MoveObject(string objectName, string sourceBucketName, string destinationBucketName)
-        {
-            if (GetBucket(destinationBucketName).Contains(objectName))
-            {
-                MessageBox.Show($"Object '{objectName}' already exists in '{destinationBucketName}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
             
-            DeleteObject(objectName, sourceBucketName);
-            AddObject(objectName, destinationBucketName, "");
+            _ = await _client.DeleteObjectAsync(bucketName, objectName);
+            return true;
         }
 
-        private void AddBucket(string bucketName)
+        private async Task<bool> MoveObject(string objectName, string sourceBucketName, string destinationBucketName)
         {
-            if (_buckets.Any(x => x.Key == bucketName))
+            if (_client is null)
             {
-                MessageBox.Show($"Bucket '{bucketName}' already exists.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
 
-            _buckets.Add(new(bucketName, []));
+            var response = await _client.CopyObjectAsync(sourceBucketName, objectName, destinationBucketName, objectName);
+
+            if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
+                return false;
+            }
+
+            _ = await _client.DeleteObjectAsync(sourceBucketName, objectName);
+            return true;
         }
 
-        private void DeleteBucket(string bucketName)
+        private async Task<bool> AddBucket(string bucketName)
         {
-            if (_buckets.Index().FirstOrDefault(x => x.Item.Key == bucketName) is { Index: var index, Item: ({ }, { }) })
+            if (_client is null)
             {
-                _buckets.RemoveAt(index);
+                return false;
             }
+
+            var response = await _client.PutBucketAsync(bucketName);
+            return response.HttpStatusCode == HttpStatusCode.OK;
+        }
+
+        private async Task<bool> DeleteBucket(string bucketName)
+        {
+            if (_client is null)
+            {
+                return false;
+            }
+            
+            _ = await _client.DeleteBucketAsync(bucketName);
+            return true;
         }
     }
 }
