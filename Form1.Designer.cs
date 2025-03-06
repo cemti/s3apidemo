@@ -210,7 +210,6 @@
             sourceBucketComboBox.Name = "sourceBucketComboBox";
             sourceBucketComboBox.Size = new Size(121, 23);
             sourceBucketComboBox.TabIndex = 1;
-            sourceBucketComboBox.SelectedIndexChanged += SourceBucketComboBox_SelectedIndexChanged;
             // 
             // objectListBox
             // 

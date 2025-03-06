@@ -16,6 +16,18 @@ public partial class Form1 : Form
         }
     }
 
+    private static async void TryExecute(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
     public Form1()
     {
         InitializeComponent();
@@ -31,13 +43,18 @@ public partial class Form1 : Form
         PrepareComboBox(moveToBucketComboBox);
 
         objectListBox.DataSource = new BindingSource(_currentObjects, null!);
+
+        var source = (BindingSource)sourceBucketComboBox.DataSource!;
+
+        source.CurrentItemChanged +=
+            (_, _) => TryExecute(async () => PopulateList(_currentObjects, await QueryObjects((string)source.Current!)));
     }    
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
         InitializeClient();
-        PopulateList(_buckets, await QueryBuckets());
+        TryExecute(async () => PopulateList(_buckets, await QueryBuckets()));
     }
 
     protected override void OnClosed(EventArgs e)
@@ -56,45 +73,34 @@ public partial class Form1 : Form
         }
     }
 
-    private async void UploadButton_Click(object sender, EventArgs e)
+    private void UploadButton_Click(object sender, EventArgs e)
     {
-        if (await AddObject(objectNameTextBox.Text, targetBucketComboBox.Text, fileTextBox.Text))
+        TryExecute(async () =>
         {
+            await AddObject(objectNameTextBox.Text, targetBucketComboBox.Text, fileTextBox.Text);
             _currentObjects.Add(objectNameTextBox.Text);
-            return;
-        }
-
-        MessageBox.Show($"Error adding '{objectNameTextBox.Text}' to bucket '{targetBucketComboBox.Text}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        });
     }
 
-    private async void CreateBucketButton_Click(object sender, EventArgs e)
+    private void CreateBucketButton_Click(object sender, EventArgs e)
     {
-        if (await AddBucket(bucketNameTextBox.Text))
+        TryExecute(async () =>
         {
+            await AddBucket(bucketNameTextBox.Text);
             _buckets.Add(bucketNameTextBox.Text);
-            return;
-        }
-
-        MessageBox.Show($"Error adding bucket '{bucketNameTextBox.Text}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        });
     }
 
-    private async void DeleteBucketButton_Click(object sender, EventArgs e)
+    private void DeleteBucketButton_Click(object sender, EventArgs e)
     {
-        if (await DeleteBucket(bucketToDeleteComboBox.Text))
+        TryExecute(async () =>
         {
+            await DeleteBucket(bucketToDeleteComboBox.Text);
             _buckets.RemoveAt(bucketToDeleteComboBox.SelectedIndex);
-            return;
-        }
-
-        MessageBox.Show($"Error deleting bucket '{bucketToDeleteComboBox.Text}'. Make sure it's empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        });
     }
 
-    private async void SourceBucketComboBox_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        PopulateList(_currentObjects, await QueryObjects(sourceBucketComboBox.Text));
-    }
-
-    private async void DownloadButton_Click(object sender, EventArgs e)
+    private void DownloadButton_Click(object sender, EventArgs e)
     {
         if (objectListBox.SelectedValue is string selectedObject)
         {
@@ -102,41 +108,48 @@ public partial class Form1 : Form
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                await DownloadObject(selectedObject, sourceBucketComboBox.Text, dialog.FileName);
+                TryExecute(async () => await DownloadObject(selectedObject, sourceBucketComboBox.Text, dialog.FileName));
             }
         }
     }
 
-    private async void DeleteButton_Click(object sender, EventArgs e)
-    {
-        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex }
-            && await DeleteObject(selectedObject, sourceBucketComboBox.Text))
-        {
-            _currentObjects.RemoveAt(selectedIndex);
-        }
-    }
-
-    private async void RenameButton_Click(object sender, EventArgs e)
+    private void DeleteButton_Click(object sender, EventArgs e)
     {
         if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
         {
-            if (await RenameObject(selectedObject, newObjectNameTextBox.Text, sourceBucketComboBox.Text))
+            TryExecute(async () =>
             {
-                _currentObjects[selectedIndex] = newObjectNameTextBox.Text;
-                return;
-            }
-
-            MessageBox.Show($"Error adding '{newObjectNameTextBox.Text}' to bucket '{sourceBucketComboBox.Text}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                await DeleteObject(selectedObject, sourceBucketComboBox.Text);
+                _currentObjects.RemoveAt(selectedIndex);
+            });
         }
     }
 
-    private async void MoveObjectButton_Click(object sender, EventArgs e)
+    private void RenameButton_Click(object sender, EventArgs e)
     {
-        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex }
-            && await MoveObject(selectedObject, sourceBucketComboBox.Text, moveToBucketComboBox.Text)
-            && sourceBucketComboBox.Text != moveToBucketComboBox.Text)
+        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
         {
-            _currentObjects.RemoveAt(selectedIndex);
+            TryExecute(async () =>
+            {
+                await RenameObject(selectedObject, newObjectNameTextBox.Text, sourceBucketComboBox.Text);
+                _currentObjects[selectedIndex] = newObjectNameTextBox.Text;
+            });
+        }
+    }
+
+    private void MoveObjectButton_Click(object sender, EventArgs e)
+    {
+        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
+        {
+            TryExecute(async () =>
+            {
+                await MoveObject(selectedObject, sourceBucketComboBox.Text, moveToBucketComboBox.Text);
+
+                if (sourceBucketComboBox.Text != moveToBucketComboBox.Text)
+                {
+                    _currentObjects.RemoveAt(selectedIndex);
+                }
+            });
         }
     }
 }
