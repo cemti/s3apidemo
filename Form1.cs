@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace S3ApiDemo;
 
@@ -59,8 +58,6 @@ public partial class Form1 : Form
 
     private async void UploadButton_Click(object sender, EventArgs e)
     {
-        Debug.WriteLine($"Upload file `{fileTextBox.Text}` to bucket `{targetBucketComboBox.Text}` as object `{objectNameTextBox.Text}`.");
-
         if (await AddObject(objectNameTextBox.Text, targetBucketComboBox.Text, fileTextBox.Text))
         {
             _currentObjects.Add(objectNameTextBox.Text);
@@ -72,8 +69,6 @@ public partial class Form1 : Form
 
     private async void CreateBucketButton_Click(object sender, EventArgs e)
     {
-        Debug.WriteLine($"Create bucket `{bucketNameTextBox.Text}`.");
-        
         if (await AddBucket(bucketNameTextBox.Text))
         {
             _buckets.Add(bucketNameTextBox.Text);
@@ -85,8 +80,6 @@ public partial class Form1 : Form
 
     private async void DeleteBucketButton_Click(object sender, EventArgs e)
     {
-        Debug.WriteLine($"Delete bucket `{bucketToDeleteComboBox.Text}`.");
-        
         if (await DeleteBucket(bucketToDeleteComboBox.Text))
         {
             _buckets.RemoveAt(bucketToDeleteComboBox.SelectedIndex);
@@ -98,7 +91,6 @@ public partial class Form1 : Form
 
     private async void SourceBucketComboBox_SelectedIndexChanged(object sender, EventArgs e)
     {
-        Debug.WriteLine($"Query objects from bucket `{sourceBucketComboBox.Text}`.");
         PopulateList(_currentObjects, await QueryObjects(sourceBucketComboBox.Text));
     }
 
@@ -110,7 +102,6 @@ public partial class Form1 : Form
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                Debug.WriteLine("Save the selected object content.");
                 await DownloadObject(selectedObject, sourceBucketComboBox.Text, dialog.FileName);
             }
         }
@@ -118,14 +109,10 @@ public partial class Form1 : Form
 
     private async void DeleteButton_Click(object sender, EventArgs e)
     {
-        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
+        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex }
+            && await DeleteObject(selectedObject, sourceBucketComboBox.Text))
         {
-            Debug.WriteLine("Delete the selected object.");
-
-            if (await DeleteObject(selectedObject, sourceBucketComboBox.Text))
-            {
-                _currentObjects.RemoveAt(selectedIndex);
-            }
+            _currentObjects.RemoveAt(selectedIndex);
         }
     }
 
@@ -133,8 +120,6 @@ public partial class Form1 : Form
     {
         if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
         {
-            Debug.WriteLine($"Rename the selected object to `{newObjectNameTextBox.Text}`.");
-
             if (await RenameObject(selectedObject, newObjectNameTextBox.Text, sourceBucketComboBox.Text))
             {
                 _currentObjects[selectedIndex] = newObjectNameTextBox.Text;
@@ -147,15 +132,11 @@ public partial class Form1 : Form
 
     private async void MoveObjectButton_Click(object sender, EventArgs e)
     {
-        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
-        {                
-            Debug.WriteLine($"Move the selected object from `{sourceBucketComboBox.Text}` to `{moveToBucketComboBox.Text}`.");
-
-            if (await MoveObject(selectedObject, sourceBucketComboBox.Text, moveToBucketComboBox.Text)
-                && sourceBucketComboBox.Text != moveToBucketComboBox.Text)
-            {
-                _currentObjects.RemoveAt(selectedIndex);
-            }
+        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex }
+            && await MoveObject(selectedObject, sourceBucketComboBox.Text, moveToBucketComboBox.Text)
+            && sourceBucketComboBox.Text != moveToBucketComboBox.Text)
+        {
+            _currentObjects.RemoveAt(selectedIndex);
         }
     }
 }
