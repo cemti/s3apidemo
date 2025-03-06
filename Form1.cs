@@ -152,4 +152,12 @@ public partial class Form1 : Form
             });
         }
     }
+
+    private void CopyObjectButton_Click(object sender, EventArgs e)
+    {
+        if (objectListBox is { SelectedValue: string selectedObject, SelectedIndex: var selectedIndex })
+        {
+            TryExecute(async () => await CopyObject(selectedObject, sourceBucketComboBox.Text, moveToBucketComboBox.Text));
+        }
+    }
 }

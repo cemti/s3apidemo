@@ -49,6 +49,7 @@
             deleteBucketButton = new Button();
             bucketNameTextBox = new TextBox();
             bucketToDeleteComboBox = new ComboBox();
+            copyObjectButton = new Button();
             tabControl1.SuspendLayout();
             uploadTabPage.SuspendLayout();
             filesTabPage.SuspendLayout();
@@ -129,6 +130,7 @@
             // 
             // filesTabPage
             // 
+            filesTabPage.Controls.Add(copyObjectButton);
             filesTabPage.Controls.Add(moveObjectButton);
             filesTabPage.Controls.Add(renameButton);
             filesTabPage.Controls.Add(newObjectNameTextBox);
@@ -147,7 +149,7 @@
             // 
             // moveObjectButton
             // 
-            moveObjectButton.Location = new Point(207, 200);
+            moveObjectButton.Location = new Point(207, 229);
             moveObjectButton.Name = "moveObjectButton";
             moveObjectButton.Size = new Size(75, 23);
             moveObjectButton.TabIndex = 5;
@@ -271,6 +273,16 @@
             bucketToDeleteComboBox.Size = new Size(241, 23);
             bucketToDeleteComboBox.TabIndex = 0;
             // 
+            // copyObjectButton
+            // 
+            copyObjectButton.Location = new Point(207, 200);
+            copyObjectButton.Name = "copyObjectButton";
+            copyObjectButton.Size = new Size(75, 23);
+            copyObjectButton.TabIndex = 5;
+            copyObjectButton.Text = "Copy";
+            copyObjectButton.UseVisualStyleBackColor = true;
+            copyObjectButton.Click += CopyObjectButton_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -313,5 +325,6 @@
         private Button renameButton;
         private TextBox newObjectNameTextBox;
         private ComboBox moveToBucketComboBox;
+        private Button copyObjectButton;
     }
 }

@@ -71,6 +71,11 @@ partial class Form1
         _ = await _client.DeleteObjectAsync(sourceBucketName, objectName);
     }
 
+    private async Task CopyObject(string objectName, string sourceBucketName, string destinationBucketName)
+    {
+        _ = await _client.CopyObjectAsync(sourceBucketName, objectName, destinationBucketName, objectName);
+    }
+
     private async Task AddBucket(string bucketName)
     {
         _ = await _client.PutBucketAsync(bucketName);
