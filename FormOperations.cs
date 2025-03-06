@@ -35,7 +35,7 @@ namespace s3apidemo
             return _buckets.First(x => x.Key == bucketName).Value;
         }
 
-        private void AddObject(string objectName, string filePath, string bucketName)
+        private void AddObject(string objectName, string bucketName, string filePath)
         {
             var bucket = GetBucket(bucketName);
 
@@ -63,6 +63,11 @@ namespace s3apidemo
                 bucket[index] = newObjectName;
             }
         }
+
+        private void DownloadObject(string objectName, string bucketname, string filePath)
+        {
+
+        }
         
         private void DeleteObject(string objectName, string bucketName)
         {
@@ -78,7 +83,7 @@ namespace s3apidemo
             }
             
             DeleteObject(objectName, sourceBucketName);
-            AddObject(objectName, "", destinationBucketName);
+            AddObject(objectName, destinationBucketName, "");
         }
 
         private void AddBucket(string bucketName)

@@ -34,7 +34,7 @@ namespace s3apidemo
         private void UploadButton_Click(object sender, EventArgs e)
         {
             Debug.WriteLine($"Upload file `{fileTextBox.Text}` to bucket `{targetBucketComboBox.Text}` as object `{objectNameTextBox.Text}`.");
-            AddObject(objectNameTextBox.Text, fileTextBox.Text, targetBucketComboBox.Text);
+            AddObject(objectNameTextBox.Text, targetBucketComboBox.Text, fileTextBox.Text);
         }
 
         private void CreateBucketButton_Click(object sender, EventArgs e)
@@ -56,13 +56,14 @@ namespace s3apidemo
 
         private void DownloadButton_Click(object sender, EventArgs e)
         {
-            if (objectListBox.SelectedIndex != -1)
+            if (objectListBox.SelectedValue is string selectedValue)
             {
                 using SaveFileDialog dialog = new();
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     Debug.WriteLine("Save the selected object content.");
+                    DownloadObject(selectedValue, sourceBucketComboBox.Text, dialog.FileName);
                 }
             }
         }
@@ -72,7 +73,7 @@ namespace s3apidemo
             if (objectListBox.SelectedValue is string selectedValue)
             {
                 Debug.WriteLine("Delete the selected object.");
-                DeleteObject(selectedValue, targetBucketComboBox.Text);
+                DeleteObject(selectedValue, sourceBucketComboBox.Text);
             }
         }
 
