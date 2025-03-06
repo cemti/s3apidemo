@@ -1,4 +1,4 @@
-namespace s3apidemo
+namespace S3ApiDemo
 {
     internal static class Program
     {

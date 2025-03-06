@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace s3apidemo
+namespace S3ApiDemo
 {
     public partial class Form1 : Form
     {

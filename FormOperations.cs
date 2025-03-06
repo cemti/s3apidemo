@@ -4,7 +4,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using System.Net;
 
-namespace s3apidemo
+namespace S3ApiDemo
 {
     partial class Form1
     {
