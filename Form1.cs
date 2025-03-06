@@ -34,7 +34,7 @@ namespace s3apidemo
         private void UploadButton_Click(object sender, EventArgs e)
         {
             Debug.WriteLine($"Upload file `{fileTextBox.Text}` to bucket `{targetBucketComboBox.Text}` as object `{objectNameTextBox.Text}`.");
-            AddObject(objectNameTextBox.Text, targetBucketComboBox.Text);
+            AddObject(objectNameTextBox.Text, fileTextBox.Text, targetBucketComboBox.Text);
         }
 
         private void CreateBucketButton_Click(object sender, EventArgs e)
