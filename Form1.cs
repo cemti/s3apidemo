@@ -7,6 +7,16 @@ public partial class Form1 : Form
 {
     private readonly BindingList<string> _buckets = [], _currentObjects = [];
 
+    private static void PopulateList<T>(BindingList<T> list, IEnumerable<T> contents)
+    {
+        list.Clear();
+
+        foreach (var content in contents)
+        {
+            list.Add(content);
+        }
+    }
+
     public Form1()
     {
         InitializeComponent();
@@ -22,21 +32,13 @@ public partial class Form1 : Form
         PrepareComboBox(moveToBucketComboBox);
 
         objectListBox.DataSource = new BindingSource(_currentObjects, null!);
-    }
+    }    
 
     protected override async void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
         InitializeClient();
-
-        var buckets = await QueryBuckets();
-
-        _buckets.Clear();
-
-        foreach (var bucket in buckets)
-        {
-            _buckets.Add(bucket);
-        }
+        PopulateList(_buckets, await QueryBuckets());
     }
 
     protected override void OnClosed(EventArgs e)
@@ -97,14 +99,7 @@ public partial class Form1 : Form
     private async void SourceBucketComboBox_SelectedIndexChanged(object sender, EventArgs e)
     {
         Debug.WriteLine($"Query objects from bucket `{sourceBucketComboBox.Text}`.");
-        var objects = await QueryObjects(sourceBucketComboBox.Text);
-
-        _currentObjects.Clear();
-        
-        foreach (var obj in objects)
-        {
-            _currentObjects.Add(obj);
-        }
+        PopulateList(_currentObjects, await QueryObjects(sourceBucketComboBox.Text));
     }
 
     private async void DownloadButton_Click(object sender, EventArgs e)
