@@ -69,28 +69,28 @@ namespace s3apidemo
 
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            if (objectListBox.SelectedIndex != -1)
+            if (objectListBox.SelectedValue is string selectedValue)
             {
                 Debug.WriteLine("Delete the selected object.");
-                DeleteObject(objectNameTextBox.Text, targetBucketComboBox.Text);
+                DeleteObject(selectedValue, targetBucketComboBox.Text);
             }
         }
 
         private void RenameButton_Click(object sender, EventArgs e)
         {
-            if (objectListBox.SelectedValue is { } selectedValue)
+            if (objectListBox.SelectedValue is string selectedValue)
             {
                 Debug.WriteLine($"Rename the selected object to `{newObjectNameTextBox.Text}`.");
-                RenameObject((string)selectedValue!, newObjectNameTextBox.Text, sourceBucketComboBox.Text);
+                RenameObject(selectedValue, newObjectNameTextBox.Text, sourceBucketComboBox.Text);
             }
         }
 
         private void MoveObjectButton_Click(object sender, EventArgs e)
         {
-            if (objectListBox.SelectedValue is { } selectedValue)
+            if (objectListBox.SelectedValue is string selectedValue)
             {                
                 Debug.WriteLine($"Move the selected object from `{sourceBucketComboBox.Text}` to `{moveToBucketComboBox.Text}`.");
-                MoveObject((string)selectedValue!, sourceBucketComboBox.Text, moveToBucketComboBox.Text);
+                MoveObject(selectedValue, sourceBucketComboBox.Text, moveToBucketComboBox.Text);
             }
         }
     }
